@@ -1,0 +1,34 @@
+[Unit]
+Description=vmcore KVM %I
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/srv/vmcore/kvm.d/default
+EnvironmentFile=/srv/vmcore/kvm.d/%i
+PIDFile=/srv/vmcore/run/%i.pid
+ExecStart=/usr/bin/env kvm \
+ $args \
+ -pidfile /srv/vmcore/run/%i.pid \
+ -name ${name} \
+ -nodefaults \
+ -nographic \
+ -vga cirrus \
+ -cpu host \
+ -smp sockets=${cpusockets},cores=${cpucorespersocket},threads=${cputhreadspercore} \
+ -k ${keyboardlayout} \
+ -vnc :${vnc} \
+ -usbdevice tablet \
+ -m ${ram} \
+ -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
+ -device virtio-balloon-pci,id=balloon0 \
+ -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
+ -device virtio-net-pci,netdev=nic0,mac=${mac} \
+ -monitor telnet:localhost:${monitor},server,nowait,nodelay
+ExecStop=/bin/sh -c "echo 'system_powerdown' | nc localhost ${monitor}"
+TimeoutStopSec=120
+KillMode=none
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target
