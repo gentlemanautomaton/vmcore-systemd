@@ -6,4 +6,5 @@ bridge=kvmbr0
 ram=1024
 cpucorespersocket=4
 mac=58:12:23:34:45:56
+ip=172.16.5.12
 args=-drive id=drive0,if=none,media=disk,cache=writeback,discard=on,file=/srv/vmcore/volumes/france/france-0.qcow2 -device virtio-blk-pci,drive=drive0,id=virtio0,bootindex=0
