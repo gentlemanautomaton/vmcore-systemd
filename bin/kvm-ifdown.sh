@@ -5,10 +5,10 @@ if [ -n "$nic" ]; then
 	/usr/bin/env brctl delif $bridge $nic
 
 	# detach chain for this nic from firewall
-	/usr/bin/env iptables -D INPUT -i $nic -j $nic
-	/usr/bin/env iptables -D OUTPUT -o $nic -j $nic
-	/usr/bin/env iptables -D FORWARD -i $nic -j $nic
-	/usr/bin/env iptables -D FORWARD -o $nic -j $nic
+        /usr/bin/env iptables -D INPUT -m physdev --physdev-in $nic -j $nic
+        /usr/bin/env iptables -D OUTPUT -m physdev --physdev-out $nic -j $nic
+        /usr/bin/env iptables -D FORWARD -m physdev --physdev-in $nic -j $nic
+        /usr/bin/env iptables -D FORWARD -m physdev --physdev-out $nic -j $nic
 
 	# remove firewall chain for this nic
 	/usr/bin/env iptables -F $nic
