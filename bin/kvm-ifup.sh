@@ -1,6 +1,9 @@
 #!/bin/bash
 
 if [ -n "$nic" ]; then
+	# include br_netfilter kernel module (maybe shouldn't be automatic?)
+	modprobe br_netfilter
+
 	# turn up the nic
 	/usr/bin/env ip link set $nic up
 
@@ -10,8 +13,8 @@ if [ -n "$nic" ]; then
 
 	# restrict to IP if defined
 	if [ -n "$ip" ]; then
-		/usr/bin/env iptables -A $nic -i $nic ! -s $ip -j REJECT
-		/usr/bin/env iptables -A $nic -o $nic ! -d $ip -j REJECT
+		/usr/bin/env iptables -A $nic -m physdev --physdev-in $nic ! -s $ip -j REJECT
+		/usr/bin/env iptables -A $nic -m physdev --physdev-out $nic ! -d $ip -j REJECT
 	fi
 
 	# load custom firewall if exists
@@ -20,10 +23,10 @@ if [ -n "$nic" ]; then
 	fi
 
 	# attach chain for this nic to firewall
-	/usr/bin/env iptables -A INPUT -i $nic -j $nic
-	/usr/bin/env iptables -A OUTPUT -o $nic -j $nic
-	/usr/bin/env iptables -A FORWARD -i $nic -j $nic
-	/usr/bin/env iptables -A FORWARD -o $nic -j $nic
+	/usr/bin/env iptables -A INPUT -m physdev --physdev-in $nic -j $nic
+	/usr/bin/env iptables -A OUTPUT -m physdev --physdev-out $nic -j $nic
+	/usr/bin/env iptables -A FORWARD -m physdev --physdev-in $nic -j $nic
+	/usr/bin/env iptables -A FORWARD -m physdev --physdev-out $nic -j $nic
 
 	# add nic to the bridge
 	/usr/bin/env brctl addif $bridge $nic
