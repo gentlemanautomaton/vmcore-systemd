@@ -1,5 +1,11 @@
 #!/bin/bash
 
-# install the unit template (this is where it should go if we deployed this as a package)
+# Everything in this file should be done via package management, not this script.  FIXME
+
+# requires...
+apt-get install qemu-kvm bridge-utils
+
+# install the unit template
+mkdir -p /usr/lib/systemd/system
 cp -v /srv/vmcore/systemd/vmcore-kvm@.service /usr/lib/systemd/system/
 systemctl daemon-reload
