@@ -11,4 +11,7 @@ cp -v /srv/vmcore/systemd/vmcore-kvm@.service /usr/lib/systemd/system/
 systemctl daemon-reload
 
 # install the vmcore symlink
-ln -sv /srv/vmcore/bin/vmcore /usr/sbin/vmcore
+ln -sv /srv/vmcore/bin/vmcore /usr/bin/vmcore
+
+# install the bash_complete file
+cp bashcomplete /etc/bash_completion.d/vmcore

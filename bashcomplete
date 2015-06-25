@@ -1,0 +1,39 @@
+_vmcore()
+{
+	local cur verb prev opts
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	verb="${COMP_WORDS[1]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	if [ "$COMP_CWORD" -eq 1 ]; then
+		COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore verbs)" -- $cur) )
+		return 0
+	fi
+
+	case "$verb" in
+		help|list)
+			COMPREPLY=( $(compgen -W "" -- $cur) )
+			return 0
+			;;
+		status)
+			if [ "$COMP_CWORD" -eq 2 ]; then
+				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore list)" -- $cur) )
+			elif [ "$COMP_CWORD" -eq 3 ]; then
+				COMPREPLY=( $(compgen -W "-l" -- $cur) )
+			else
+				COMPREPLY=( $(compgen -W "" -- $cur) )
+			fi
+			return 0
+			;;
+		*)
+			if [ "$COMP_CWORD" -eq 2 ]; then
+				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore list)" -- $cur) )
+			else
+				COMPREPLY=( $(compgen -W "" -- $cur) )
+			fi
+			return 0
+			;;
+	esac
+}
+complete -F _vmcore vmcore

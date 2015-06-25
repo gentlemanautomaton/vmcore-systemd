@@ -2,9 +2,9 @@
 
 ROOTDIR="/srv/vmcore/kvm.d"
 
-VM=$1
-shift
 VERB=$1
+shift
+VM=$1
 shift
 
 DEFAULTCONF="$ROOTDIR/default"
@@ -12,12 +12,47 @@ VMCONF="$ROOTDIR/$VM"
 
 function help {
 	echo ""
-	echo "Usage: $(basename "$0") <VM> <VERB> [ARGS...]"
+	echo "Usage: $(basename "$0") <VERB> <VM> [ARGS...]"
+	echo ""
+	echo "           VERB   One of:"
+	echo "                    help, list, status, start, stop, enable, disable,"
+	echo "                    backup, prebackup, postbackup"
 	echo ""
 	echo "           VM     Name of virtual machine"
 	echo ""
-	echo "           VERB   One of (status|start|stop|backup|prebackup|postbackup)"
-	echo ""
+}
+
+function readvm {
+	if [ -z "$VM" -o ! -f "$VMCONF" ]; then
+		echo "VM config missing or no VM argument was provided"
+		exit 1
+	fi
+	eval $(crudini --get --format=sh "$DEFAULTCONF" '')
+	eval $(crudini --get --format=sh "$VMCONF" '')
+	echo "VM: $name"
+}
+
+function bashcomplete {
+	echo BASHCOMPLETE
+}
+
+function verbs {
+	echo help
+	echo list
+	echo status
+	echo start
+	echo stop
+	echo enable
+	echo disable
+	echo backup
+	echo prebackup
+	echo postbackup
+}
+
+function list {
+	while read VMFILE; do
+		basename "${VMFILE}"
+	done < <(grep -El "^name=" /srv/vmcore/kvm.d/* | sort)
 }
 
 function prebackup {
@@ -38,36 +73,45 @@ function backup {
 	fi
 }
 
-if [ -z "$VM" -o -z "$VERB" -o "$VM" == "-h" -o "$VERB" == "-h" ]; then
-	help
-	exit 1
+if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
+	VERB=help
 fi
-
-if [ -z "$VM" -o ! -f "$VMCONF" ]; then
-	echo "VM config missing or no VM argument was provided"
-	exit 1
-fi
-
-eval $(crudini --get --format=sh "$DEFAULTCONF" '')
-eval $(crudini --get --format=sh "$VMCONF" '')
-
-echo "VM: $name"
 
 case $VERB in
+	bashcomplete)
+		bashcomplete
+		exit
+		;;
+	verbs)
+		verbs
+		exit
+		;;
+	help)
+		help
+		exit 1
+		;;
+	list)
+		list
+		exit
+		;;
 	prebackup)
 		# can be used to prepare a VM for backup when the backup is coordinated via an external system
+		readvm
 		prebackup
 		;;
 	postbackup)
 		# can be used to unprepare a VM for backup when the backup is coordinated via an external system
+		readvm
 		postbackup
 		;;
 	backup)
+		readvm
 		prebackup
 		backup
 		postbackup
 		;;
 	*)
+		readvm
 		systemctl $VERB vmcore-kvm@$VM.service $*
 		;;
 esac
