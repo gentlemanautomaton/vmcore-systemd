@@ -7,6 +7,7 @@ Wants=network-online.target
 EnvironmentFile=/srv/vmcore/kvm.d/default
 EnvironmentFile=/srv/vmcore/kvm.d/%i
 PIDFile=/srv/vmcore/run/%i.pid
+ExecStartPre=/srv/vmcore/bin/prestart %i
 ExecStart=/usr/bin/env kvm \
  $args \
  -pidfile /srv/vmcore/run/%i.pid \
@@ -25,10 +26,11 @@ ExecStart=/usr/bin/env kvm \
  -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
  -device virtio-net-pci,netdev=nic0,mac=${mac} \
  -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay
-ExecStop=/bin/sh -c "echo 'system_powerdown' | nc localhost ${monitor} >/dev/null"
+ExecStartPost=/srv/vmcore/bin/poststart %i
+ExecStop=/srv/vmcore/bin/stop %i
 TimeoutStopSec=120
 KillMode=none
-Restart=on-abnormal
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

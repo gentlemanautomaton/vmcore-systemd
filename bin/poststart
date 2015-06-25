@@ -1,0 +1,9 @@
+#!/bin/bash
+
+VM=$1
+
+if [ -n "$poststart" ]; then
+	$poststart
+elif [ -x "/srv/vmcore/kvm.d/${VM}.poststart" ]; then
+	"/srv/vmcore/kvm.d/${VM}.poststart"
+fi

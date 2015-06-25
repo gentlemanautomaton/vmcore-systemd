@@ -1,0 +1,9 @@
+#!/bin/bash
+
+VM=$1
+
+if [ -n "$prestart" ]; then
+	$prestart
+elif [ -x "/srv/vmcore/kvm.d/${VM}.prestart" ]; then
+	"/srv/vmcore/kvm.d/${VM}.prestart"
+fi

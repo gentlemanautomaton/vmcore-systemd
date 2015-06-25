@@ -9,3 +9,6 @@ apt-get install qemu-kvm bridge-utils
 mkdir -p /usr/lib/systemd/system
 cp -v /srv/vmcore/systemd/vmcore-kvm@.service /usr/lib/systemd/system/
 systemctl daemon-reload
+
+# install the vmcore symlink
+ln -sv /srv/vmcore/bin/vmcore /usr/sbin/vmcore
