@@ -26,6 +26,16 @@ _vmcore()
 			fi
 			return 0
 			;;
+		screendump)
+			if [ "$COMP_CWORD" -eq 2 ]; then
+				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore list)" -- $cur) )
+			elif [ "$COMP_CWORD" -eq 3 ]; then
+				COMPREPLY=( $(compgen -f -- $cur) )
+			else
+				COMPREPLY=( $(compgen -W "" -- $cur) )
+			fi
+			return 0
+			;;
 		*)
 			if [ "$COMP_CWORD" -eq 2 ]; then
 				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore list)" -- $cur) )

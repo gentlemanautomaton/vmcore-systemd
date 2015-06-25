@@ -16,7 +16,7 @@ function help {
 	echo ""
 	echo "           VERB   One of:"
 	echo "                    help, list, status, start, stop, enable, disable,"
-	echo "                    backup, prebackup, postbackup"
+	echo "                    backup, prebackup, postbackup, screendump"
 	echo ""
 	echo "           VM     Name of virtual machine"
 	echo ""
@@ -47,6 +47,7 @@ function verbs {
 	echo backup
 	echo prebackup
 	echo postbackup
+	echo screendump
 }
 
 function list {
@@ -71,6 +72,10 @@ function backup {
 	if [ -x "$VMCONF.backup" ]; then
 		. "$VMCONF.backup"
 	fi
+}
+
+function screendump {
+	nc -q 5 127.0.0.1 $monitor < <(echo screendump "$1") #>/dev/null
 }
 
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
@@ -109,6 +114,10 @@ case $VERB in
 		prebackup
 		backup
 		postbackup
+		;;
+	screendump)
+		readvm
+		screendump "$(readlink -f "$1")"
 		;;
 	*)
 		readvm
