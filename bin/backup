@@ -1,0 +1,57 @@
+#!/bin/bash
+
+VM=$1
+
+function backupimage {
+	OLDIFS="$IFS"
+	IFS="|"
+	for ENTRY in $*; do
+		IFS=";"; read -ra PARTS <<< "$ENTRY"
+		BLOCK="${PARTS[0]}"
+		DEST="${PARTS[1]}"
+		KEEP="${PARTS[2]}"
+		echo
+		echo "$BLOCK save as $DEST and keep $KEEP copies."
+
+		DESTMATCH=${DEST//%\{TIME\}/*}
+		echo "  Existing copies:"
+		ls $DESTMATCH 2>/dev/null
+		echo
+
+		DEST=${DEST//%\{TIME\}/$(date +"%s")}
+		echo "  Destination:"
+		echo "    $DEST"
+		echo
+
+		# we don't want it to already exist, otherwise we might overwrite something really important
+		[ -f "$DEST" ] && return 1
+
+		# we want to make sure the user can write to the destination
+		touch "$DEST" || return 1
+		rm "$DEST"
+
+		# let's do this thing
+		nc -q 5 127.0.0.1 $monitor <<< "drive_backup -f $BLOCK $DEST qcow2" >/dev/null
+	done
+	IFS="$OLDIFS"
+}
+
+if [ -n "$backup" ]; then
+	$backup
+elif [ -x "/srv/vmcore/kvm.d/${VM}.backup" ]; then
+	"/srv/vmcore/kvm.d/${VM}.backup"
+elif [ -n "$backupimage" ]; then
+	backupimage $backupimage
+else
+	echo "??"
+fi
+
+
+#drive_backup [-n] [-f] device target [format] -- initiates a point-in-time
+#			copy for a device. The device's contents are
+#			copied to the new image file, excluding data that
+#			is written after the command is started.
+#			The -n flag requests QEMU to reuse the image found
+#			in new-image-file, instead of recreating it from scratch.
+#			The -f flag requests QEMU to copy the whole disk,
+#			so that the result does not need a backing file.
