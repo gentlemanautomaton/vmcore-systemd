@@ -10,6 +10,8 @@ shift
 DEFAULTCONF="$ROOTDIR/default"
 VMCONF="$ROOTDIR/$VM"
 
+export monitor backupimage
+
 function help {
 	echo ""
 	echo "Usage: $(basename "$0") <VERB> <VM> [ARGS...]"
@@ -58,24 +60,28 @@ function list {
 
 function prebackup {
 	if [ -x "$VMCONF.prebackup" ]; then
-		. "$VMCONF.prebackup"
+		"$VMCONF.prebackup"
 	fi
 }
 
 function postbackup {
 	if [ -x "$VMCONF.postbackup" ]; then
-		. "$VMCONF.postbackup"
+		"$VMCONF.postbackup"
 	fi
 }
 
 function backup {
-	if [ -x "$VMCONF.backup" ]; then
-		. "$VMCONF.backup"
-	fi
+	/srv/vmcore/bin/backup "$VM"
 }
 
 function screendump {
-	nc -q 5 127.0.0.1 $monitor < <(echo screendump "$1") #>/dev/null
+	TEMPFILE="/tmp/screendump.$$.ppm"
+	touch "$TEMPFILE"
+	nc -q 5 127.0.0.1 $monitor < <(echo screendump "$TEMPFILE") >/dev/null
+	if [ -f "$TEMPFILE" ]; then
+		convert "$TEMPFILE" "$1"
+		rm -f "$TEMPFILE"
+	fi
 }
 
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
