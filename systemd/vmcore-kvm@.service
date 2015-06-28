@@ -28,8 +28,9 @@ ExecStart=/usr/bin/env kvm \
  -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay
 ExecStartPost=/srv/vmcore/bin/poststart %i
 ExecStop=/srv/vmcore/bin/stop %i
-TimeoutStopSec=120
-KillMode=none
+TimeoutStopSec=300
+KillMode=control-group
+KillSignal=SIGKILL
 Restart=on-failure
 
 [Install]
