@@ -7,6 +7,7 @@ if [ -n "$stop" ]; then
 elif [ -x "/srv/vmcore/kvm.d/${VM}.stop" ]; then
 	"/srv/vmcore/kvm.d/${VM}.stop"
 else
+	kill -0 "$MAINPID" 2>/dev/null || exit 0
 	nc -q 5 127.0.0.1 $monitor < <(echo sendkey ctrl-alt-f1; sleep 5s; echo system_powerdown) >/dev/null
 	for X in $(seq 300 -5 0); do
 		echo Waiting $X seconds for $MAINPID to quit...
