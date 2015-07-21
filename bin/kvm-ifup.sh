@@ -13,8 +13,13 @@ if [ -n "$nic" ]; then
 
 	# restrict to IP if defined
 	if [ -n "$ip" ]; then
-		/usr/bin/env iptables -A $nic -m physdev --physdev-is-bridged --physdev-in $nic ! -s $ip -j REJECT
-		/usr/bin/env iptables -A $nic -m physdev --physdev-is-bridged --physdev-out $nic ! -d $ip -j REJECT
+		OLDIFS="$IFS";IFS=" ,"
+		for X in $ip; do
+			/usr/bin/env iptables -A $nic -m physdev --physdev-is-bridged --physdev-in $nic -s $X -j RETURN
+			/usr/bin/env iptables -A $nic -m physdev --physdev-is-bridged --physdev-out $nic -d $X -j RETURN
+		done
+		IFS="$OLDIFS"
+		/usr/bin/env iptables -A $nic -j REJECT
 	fi
 
 	# load custom firewall if exists
