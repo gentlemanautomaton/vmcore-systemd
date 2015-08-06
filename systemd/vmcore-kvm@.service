@@ -17,6 +17,9 @@ ExecStart=/usr/bin/env kvm \
  -cpu host \
  -smp sockets=${cpusockets},cores=${cpucorespersocket},threads=${cputhreadspercore} \
  -k ${keyboardlayout} \
+ -no-hpet \
+ -rtc base=${clockbase},clock=${clockisolation},driftfix=${clockdriftfix} \
+ -global kvm-pit.lost_tick_policy=discard \
  -vnc 127.0.0.1:${vnc} \
  -usbdevice tablet \
  -m ${ram} \

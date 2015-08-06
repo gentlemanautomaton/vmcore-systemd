@@ -1,3 +1,6 @@
+clockbase=utc
+clockisolation=host
+clockdriftfix=slew
 cpusockets=1
 cpucorespersocket=1
 cputhreadspercore=1
