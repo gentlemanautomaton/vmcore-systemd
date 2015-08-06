@@ -50,6 +50,7 @@ function verbs {
 	echo prebackup
 	echo postbackup
 	echo screendump
+	echo cat
 }
 
 function list {
@@ -82,6 +83,10 @@ function screendump {
 		convert "$TEMPFILE" "$1"
 		rm -f "$TEMPFILE"
 	fi
+}
+
+function cat_ {
+	cat "/srv/vmcore/kvm.d/$1"
 }
 
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
@@ -124,6 +129,9 @@ case $VERB in
 	screendump)
 		readvm
 		screendump "$(readlink -f "$1")"
+		;;
+	cat)
+		cat_ $VM
 		;;
 	*)
 		readvm
