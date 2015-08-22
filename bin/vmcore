@@ -108,7 +108,18 @@ function create {
 	if [ -z "$VMID" ]; then
 		# FIXME: it'd be nice to be able to generate one, but we don't have enough insight into the network yet
 		echo "Missing VMID.  Usage:  vmcore create $VM [VMID]"
+		echo ".. if you want VMID to be selected automatically, set VMID to auto."
 		exit 1
+	fi
+	if [ "$VMID" = "auto" ]; then
+		echo -n "Locating an available ID.  This might take a while... "
+		VMID=$(/srv/vmcore/bin/find-spare-id)
+		if [ -z "$VMID" ]; then
+			echo "FAIL."
+			echo "You selected 'auto' VMID, but one couldn't be selected for some reason.  Sorry."
+			exit 1
+		fi
+		echo "OKAY!  Using VMID=$VMID."
 	fi
 	if [[ $VMID =~ ^[0-9]+$ ]]; then
 		if [ "$VMID" -lt 1 -o "$VMID" -gt 254 ]; then
@@ -119,11 +130,18 @@ function create {
 		echo "VMID must be an integer."
 		exit 1
 	fi
+	echo -n "Testing the selected VMID [$VMID].  This might take a while... "
+	if [ -z "$(/srv/vmcore/bin/find-spare-id $VMID)" ]; then
+		echo "FAIL."
+		echo "The selected VMID [$VMID] is already in use."
+		exit 1
+	fi
+	echo "OKAY!"
 
 	MONITORSUFFIX=$(printf "%03g" $VMID)
 	GENMAC=$(echo -n "52:54:00"; dd bs=1 count=3 if=/dev/random 2>/dev/null | hexdump -ve '/1 ":%02X"')
 
-	echo "Creating $VM [$VMID] with MAC [$GENMAC]..."
+	echo "Creating $VM [VMID=$VMID] with MAC [$GENMAC]..."
 
 	TEMPCONF=$(mktemp)
 	sed -e "s/\$VMID/$VMID/" -e "s/\$VM/$VM/" -e "s/\$MONITORSUFFIX/$MONITORSUFFIX/" -e "s/\$GENMAC/$GENMAC/" "$ROOTDIR/.skel" > "$TEMPCONF"
