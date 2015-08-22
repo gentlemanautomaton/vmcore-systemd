@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Edit this code to be appropriate for your environment.
+# This code should return a single integer that indicates an unused
+# and valid ID to be used for the create verb.
+
+ID="$1"
+shift
+
+STARTID=1
+ENDID=254
+IPPREFIX="10.100.1."
+ROOTDIR="/srv/vmcore/kvm.d"
+
+function testID {
+	ID="$1"
+	IP="$IPPREFIX$ID"
+
+	# match against ARP
+	arp -n | grep -v "(incomplete)" | grep -q "$IP" && return 1
+
+	# match against local config
+	while read IPLINE; do
+		for IPVALUE in $(echo "$IPLINE" | tr "," "\n"); do
+			if [ "$IPVALUE" = "$IP" ]; then
+				return 1
+			fi
+		done
+	done < <(grep "ip=" "$ROOTDIR/"* | cut -d= -f2)
+
+	# test via arp-scan
+	arp-scan "$IP" | grep -qi " 0 responded" || return 1
+
+	# test via nmap (arp ping mode)
+	nmap -sn -n -PR "$IP" | grep -qi "host seems down" || return 1
+
+	echo "$ID"
+	return 0
+}
+
+if [ -z $ID ]; then
+	for ID in $(seq $STARTID $ENDID); do
+		result=$(testID $ID)
+		if [ ! -z "$result" ]; then
+			echo "$result"
+			exit 0
+		fi
+	done
+else
+	result=$(testID $ID)
+	if [ -z "$result" ]; then
+		exit 1
+	else
+		echo "$result"
+		exit 0
+	fi
+fi
