@@ -18,7 +18,7 @@ function help {
 	echo ""
 	echo "           VERB   One of:"
 	echo "                    help, list, status, start, stop, enable, disable,"
-	echo "                    backup, prebackup, postbackup, screendump"
+	echo "                    backup, prebackup, postbackup, screendump, create"
 	echo ""
 	echo "           VM     Name of virtual machine"
 	echo ""
@@ -51,6 +51,8 @@ function verbs {
 	echo postbackup
 	echo screendump
 	echo cat
+	echo create
+	echo modify
 }
 
 function list {
@@ -86,7 +88,65 @@ function screendump {
 }
 
 function cat_ {
-	cat "/srv/vmcore/kvm.d/$1"
+	cat "$ROOTDIR/$1"
+}
+
+function create {
+	VM=$1
+	shift
+	VMID=$1
+	shift
+
+	if [ -z "$VM" ]; then
+		help
+		exit 1
+	fi
+	if [ -f "$VMCONF" ]; then
+		echo "$VM seems to already exist."
+		exit 1
+	fi
+	if [ -z "$VMID" ]; then
+		# FIXME: it'd be nice to be able to generate one, but we don't have enough insight into the network yet
+		echo "Missing VMID.  Usage:  vmcore create $VM [VMID]"
+		exit 1
+	fi
+	if [[ $VMID =~ ^[0-9]+$ ]]; then
+		if [ "$VMID" -lt 1 -o "$VMID" -gt 254 ]; then
+			echo "VMID must be in the range of 1-254."
+			exit 1
+		fi
+	else
+		echo "VMID must be an integer."
+		exit 1
+	fi
+
+	MONITORSUFFIX=$(printf "%03g" $VMID)
+	GENMAC=$(echo -n "52:54:00"; dd bs=1 count=3 if=/dev/random 2>/dev/null | hexdump -ve '/1 ":%02X"')
+
+	echo "Creating $VM [$VMID] with MAC [$GENMAC]..."
+
+	TEMPCONF=$(mktemp)
+	sed -e "s/\$VMID/$VMID/" -e "s/\$VM/$VM/" -e "s/\$MONITORSUFFIX/$MONITORSUFFIX/" -e "s/\$GENMAC/$GENMAC/" "$ROOTDIR/.skel" > "$TEMPCONF"
+	editor "$TEMPCONF"
+
+	if [ -f "$VMCONF" ]; then
+		echo "$VM seems to have been created by something else while you were busy editing the config file.  Cancelling..."
+		exit 1
+	fi
+	mv "$TEMPCONF" "$VMCONF" && chmod 644 "$VMCONF"
+
+	if [ -f "$VMCONF" ]; then
+		echo "$VM configuration was created and placed in the appropriate location.  You're responsible for making the drives, etc."
+		exit 0
+	fi
+
+	echo "It seems that there may have been an error when moving the configuration file to the appropriate location.  Oops?"
+	exit 1
+}
+
+function modify {
+	VM=$1
+	editor "$VMCONF"
 }
 
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
@@ -132,6 +192,12 @@ case $VERB in
 		;;
 	cat)
 		cat_ $VM
+		;;
+	create)
+		create $VM $*
+		;;
+	modify)
+		modify $VM $*
 		;;
 	*)
 		readvm
