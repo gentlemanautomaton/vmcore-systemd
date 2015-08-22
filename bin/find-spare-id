@@ -7,7 +7,7 @@
 ID="$1"
 shift
 
-STARTID=1
+STARTID=10
 ENDID=254
 IPPREFIX="10.100.1."
 ROOTDIR="/srv/vmcore/kvm.d"
