@@ -96,6 +96,8 @@ function create {
 	shift
 	VMID=$1
 	shift
+	TEMPLATE=${1:-default}
+	shift
 
 	if [ -z "$VM" ]; then
 		help
@@ -111,6 +113,14 @@ function create {
 		echo ".. if you want VMID to be selected automatically, set VMID to auto."
 		exit 1
 	fi
+
+	SKELFILE="$ROOTDIR/$TEMPLATE.skel"
+	if [ ! -f "$SKELFILE" ]; then
+		echo "$SKELFILE does not exist.  Cancelling."
+		exit 1
+	fi
+
+
 	if [ "$VMID" = "auto" ]; then
 		echo -n "Locating an available ID.  This might take a while... "
 		VMID=$(/srv/vmcore/bin/find-spare-id)
@@ -144,7 +154,7 @@ function create {
 	echo "Creating $VM [VMID=$VMID] with MAC [$GENMAC]..."
 
 	TEMPCONF=$(mktemp)
-	sed -e "s/\$VMID/$VMID/" -e "s/\$VM/$VM/" -e "s/\$MONITORSUFFIX/$MONITORSUFFIX/" -e "s/\$GENMAC/$GENMAC/" "$ROOTDIR/.skel" > "$TEMPCONF"
+	sed -e "s/\$VMID/$VMID/" -e "s/\$VM/$VM/" -e "s/\$MONITORSUFFIX/$MONITORSUFFIX/" -e "s/\$GENMAC/$GENMAC/" "$SKELFILE" > "$TEMPCONF"
 	editor "$TEMPCONF"
 
 	if [ -f "$VMCONF" ]; then
