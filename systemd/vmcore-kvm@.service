@@ -24,11 +24,11 @@ ExecStart=/usr/bin/env kvm \
  -usbdevice tablet \
  -m ${ram} \
  -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
- -device virtio-balloon-pci,id=balloon0 \
  -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
  -device virtio-net-pci,netdev=nic0,mac=${mac},bus=pci.0 \
  -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay \
  $args
+# -device virtio-balloon-pci,id=balloon0
 ExecStartPost=/srv/vmcore/bin/poststart %i
 ExecStop=/srv/vmcore/bin/stop %i
 TimeoutStopSec=300
