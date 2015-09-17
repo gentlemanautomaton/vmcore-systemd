@@ -58,7 +58,7 @@ function verbs {
 function list {
 	while read VMFILE; do
 		basename "${VMFILE}"
-	done < <(grep -El "^name=" /srv/vmcore/kvm.d/* | sort)
+	done < <(grep -El "^name=" /srv/vmcore/kvm.d/* | sort | grep -v -e'\.skel$')
 }
 
 function prebackup {
