@@ -18,7 +18,8 @@ function help {
 	echo ""
 	echo "           VERB   One of:"
 	echo "                    help, list, status, start, stop, enable, disable,"
-	echo "                    backup, prebackup, postbackup, screendump, create"
+	echo "                    backup, prebackup, postbackup, screendump, create,"
+	echo "                    console, pause, unpause"
 	echo ""
 	echo "           VM     Name of virtual machine"
 	echo ""
@@ -53,6 +54,9 @@ function verbs {
 	echo cat
 	echo create
 	echo modify
+	echo console
+	echo pause
+	echo unpause
 }
 
 function list {
@@ -177,6 +181,22 @@ function modify {
 	editor "$VMCONF"
 }
 
+function console {
+	VM=$1
+	echo "Connecting to monitor on 127.0.0.1:$monitor.  Press CTRL+] to escape, then 'quit' at the telnet prompt."
+	telnet 127.0.0.1 $monitor
+}
+
+function pause {
+	VM=$1
+	nc -q 5 127.0.0.1 $monitor < <(echo stop) >/dev/null
+}
+
+function unpause {
+	VM=$1
+	nc -q 5 127.0.0.1 $monitor < <(echo cont) >/dev/null
+}
+
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
 	VERB=help
 fi
@@ -226,6 +246,18 @@ case $VERB in
 		;;
 	modify)
 		modify $VM $*
+		;;
+	console)
+		readvm
+		console $VM $*
+		;;
+	pause)
+		readvm
+		pause $VM $*
+		;;
+	unpause)
+		readvm
+		unpause $VM $*
 		;;
 	*)
 		readvm
