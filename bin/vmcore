@@ -57,6 +57,8 @@ function verbs {
 	echo blockinfo
 	echo blocknames
 	echo blockchange
+	echo blockadd
+	echo blockdel
 }
 
 function list {
@@ -233,6 +235,51 @@ function blockchange {
 	fi
 }
 
+function blockadd {
+	VM=$1
+	DEVICE=$2
+	FILEPATH=$3
+
+	if [ ! -f "$FILEPATH" ]; then
+		echo "Requested file doesn't exist."
+		exit 1
+	fi
+
+	DEVICES=$(nc -q 5 127.0.0.1 $monitor < <(echo info block) | tail -n+3 | grep -vE "^\s*\$" | grep -vE "^\s+" | head -n-1 | cut -d: -f1 | grep "$DEVICE")
+	MATCH=""
+	for BLOCK in $DEVICES; do
+		if [ "$DEVICE" == "$BLOCK" ]; then
+			echo "$DEVICE already exists."
+			exit 1
+		fi
+	done
+	echo "$DEVICE -> $FILEPATH"
+	# drive_add 0 id=ten-gee,if=none,media=disk,werror=stop,rerror=stop,cache=writeback,discard=on,file=/home/dustyw/10G.img
+	# device_add virtio-blk-pci,drive=ten-gee,id=virtio-12312
+	nc -q 5 127.0.0.1 $monitor < <(echo drive_add 0 id=$DEVICE,if=none,media=disk,werror=stop,rerror=stop,cache=writeback,discard=on,file="$FILEPATH") >/dev/null
+	nc -q 5 127.0.0.1 $monitor < <(echo device_add virtio-blk-pci,drive=$DEVICE,id=$DEVICE) >/dev/null
+}
+
+function blockdel {
+	VM=$1
+	DEVICE=$2
+
+	DEVICES=$(nc -q 5 127.0.0.1 $monitor < <(echo info block) | tail -n+3 | grep -vE "^\s*\$" | grep -vE "^\s+" | head -n-1 | cut -d: -f1 | grep "$DEVICE")
+	MATCH=""
+	for BLOCK in $DEVICES; do
+		if [ "$DEVICE" == "$BLOCK" ]; then
+			MATCH=1
+		fi
+	done
+	if [ -z "$MATCH" ]; then
+		echo "No match for \"$DEVICE\"."
+	else
+		echo "Detaching $DEVICE..."
+		# device_del virtio-12312
+		nc -q 5 127.0.0.1 $monitor < <(echo device_del "$DEVICE") >/dev/null
+	fi
+}
+
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
 	VERB=help
 fi
@@ -306,6 +353,14 @@ case $VERB in
 	blockchange)
 		readvm
 		blockchange $VM $*
+		;;
+	blockadd)
+		readvm
+		blockadd $VM $*
+		;;
+	blockdel)
+		readvm
+		blockdel $VM $*
 		;;
 	*)
 		readvm

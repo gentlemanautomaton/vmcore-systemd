@@ -37,13 +37,23 @@ _vmcore()
 			fi
 			return 0
 			;;
-		blockchange)
+		blockchange|blockadd)
 			if [ "$COMP_CWORD" -eq 2 ]; then
 				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore list)" -- $cur) )
 			elif [ "$COMP_CWORD" -eq 3 ]; then
 				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore blocknames $vm)" -- $cur) )
 			elif [ "$COMP_CWORD" -eq 4 ]; then
 				_filedir
+			else
+				COMPREPLY=( $(compgen -W "" -- $cur) )
+			fi
+			return 0
+			;;
+		blockdel)
+			if [ "$COMP_CWORD" -eq 2 ]; then
+				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore list)" -- $cur) )
+			elif [ "$COMP_CWORD" -eq 3 ]; then
+				COMPREPLY=( $(compgen -W "$(/srv/vmcore/bin/vmcore blocknames $vm)" -- $cur) )
 			else
 				COMPREPLY=( $(compgen -W "" -- $cur) )
 			fi
