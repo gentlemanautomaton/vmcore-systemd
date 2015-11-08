@@ -32,7 +32,7 @@ function readvm {
 	fi
 	eval $(crudini --get --format=sh "$DEFAULTCONF" '')
 	eval $(crudini --get --format=sh "$VMCONF" '')
-	echo "VM: $name"
+	#echo "VM: $name"
 }
 
 function bashcomplete {
@@ -57,6 +57,9 @@ function verbs {
 	echo console
 	echo pause
 	echo unpause
+	echo blockinfo
+	echo blocknames
+	echo blockchange
 }
 
 function list {
@@ -197,6 +200,42 @@ function unpause {
 	nc -q 5 127.0.0.1 $monitor < <(echo cont) >/dev/null
 }
 
+function blockinfo {
+	VM=$1
+	nc -q 5 127.0.0.1 $monitor < <(echo info block) | tail -n+3 | grep -vE "^\s*\$" | head -n-1
+}
+
+function blocknames {
+	VM=$1
+	DEVICE=$2
+	nc -q 5 127.0.0.1 $monitor < <(echo info block) | tail -n+3 | grep -vE "^\s*\$" | grep -vE "^\s+" | head -n-1 | cut -d: -f1 | grep -E "^$DEVICE"
+}
+
+function blockchange {
+	VM=$1
+	DEVICE=$2
+	FILEPATH=$3
+
+	if [ ! -f "$FILEPATH" ]; then
+		echo "Requested file doesn't exist."
+		exit 1
+	fi
+
+	DEVICES=$(nc -q 5 127.0.0.1 $monitor < <(echo info block) | tail -n+3 | grep -vE "^\s*\$" | grep -vE "^\s+" | head -n-1 | cut -d: -f1 | grep "$DEVICE")
+	MATCH=""
+	for BLOCK in $DEVICES; do
+		if [ "$DEVICE" == "$BLOCK" ]; then
+			MATCH=1
+		fi
+	done
+	if [ -z "$MATCH" ]; then
+		echo "No match for \"$DEVICE\"."
+	else
+		echo "$DEVICE -> $FILEPATH"
+		nc -q 5 127.0.0.1 $monitor < <(echo change "$DEVICE" "$FILEPATH") >/dev/null
+	fi
+}
+
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
 	VERB=help
 fi
@@ -258,6 +297,18 @@ case $VERB in
 	unpause)
 		readvm
 		unpause $VM $*
+		;;
+	blockinfo)
+		readvm
+		blockinfo $VM $*
+		;;
+	blocknames)
+		readvm
+		blocknames $VM $*
+		;;
+	blockchange)
+		readvm
+		blockchange $VM $*
 		;;
 	*)
 		readvm
