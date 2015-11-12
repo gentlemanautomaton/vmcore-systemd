@@ -185,8 +185,13 @@ function modify {
 
 function console {
 	VM=$1
-	echo "Connecting to monitor on 127.0.0.1:$monitor.  Press CTRL+] to escape, then 'quit' at the telnet prompt."
-	telnet 127.0.0.1 $monitor
+	shift
+	if [ -z "$*" ]; then
+		echo "Connecting to monitor on 127.0.0.1:$monitor.  Press CTRL+] to escape, then 'quit' at the telnet prompt."
+		telnet 127.0.0.1 $monitor
+	else
+		echo "$*" | nc -q 5 127.0.0.1 $monitor | tail -n+3 | grep -vE "^\s*\$" | head -n-1
+	fi
 }
 
 function pause {
