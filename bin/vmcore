@@ -52,6 +52,7 @@ function verbs {
 	echo create
 	echo modify
 	echo console
+	echo powerdown
 	echo pause
 	echo unpause
 	echo blockinfo
@@ -194,6 +195,11 @@ function console {
 	fi
 }
 
+function system_powerdown {
+	VM=$1
+	nc -q 5 127.0.0.1 $monitor < <(echo sendkey ctrl-alt-f1; sleep 5s; echo system_powerdown) >/dev/null
+}
+
 function pause {
 	VM=$1
 	nc -q 5 127.0.0.1 $monitor < <(echo stop) >/dev/null
@@ -220,7 +226,11 @@ function blockchange {
 	DEVICE=$2
 	FILEPATH=$3
 
-	if [ ! -f "$FILEPATH" ]; then
+	if [ "${FILEPATH:0:4}" == "rbd:" ]; then
+		# RBD
+		# FIXME: can we (without extra dependencies, like the rbd binary) test for RBD image existence (and should we?)
+		echo "Requested file is an RBD image.  Not testing for existence."
+	elif [ ! -f "$FILEPATH" ]; then
 		echo "Requested file doesn't exist."
 		exit 1
 	fi
@@ -338,6 +348,10 @@ case $VERB in
 	console)
 		readvm
 		console $VM $*
+		;;
+	powerdown)
+		readvm
+		system_powerdown $VM $*
 		;;
 	pause)
 		readvm
