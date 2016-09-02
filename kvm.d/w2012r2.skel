@@ -8,5 +8,5 @@ cpucorespersocket=4
 mac=$GENMAC
 ip=10.100.1.$VMID
 # maybe create the drive via this command: sudo lvcreate --type raid5 -i 3 -L 256G -n $VM-os spinfast
-args=-drive id=os,if=none,media=disk,werror=stop,rerror=stop,cache=writeback,discard=on,file=/dev/spinfast/$VM-os -device virtio-blk-pci,drive=os,id=virtio0,bootindex=0 -drive file=/srv/vmcore/volumes/iso/WindowsServer2012R2-X19-82891.iso,media=cdrom -drive file=/srv/vmcore/volumes/iso/virtio-win.iso,media=cdrom -boot order=cd,once=d
+args=-drive id=os,if=none,media=disk,werror=stop,rerror=stop,cache=writeback,discard=on,format=raw,file=/dev/spinfast/$VM-os -device virtio-blk-pci,drive=os,id=virtio0,bootindex=0 -drive file=/srv/vmcore/volumes/iso/WindowsServer2012R2-X19-82891.iso,media=cdrom -drive file=/srv/vmcore/volumes/iso/virtio-win.iso,media=cdrom -boot order=cd,once=d
 backupimage=os;/media/archive1/$VM-os.%{TIME}.qcow2;3
