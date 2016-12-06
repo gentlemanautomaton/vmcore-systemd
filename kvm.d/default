@@ -7,3 +7,4 @@ cputhreadspercore=1
 ram=512M
 bootsplash=/srv/vmcore/bootsplash.bmp
 keyboardlayout=en-us
+video=VGA
