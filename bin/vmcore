@@ -60,6 +60,7 @@ function verbs {
 	echo blockchange
 	echo blockadd
 	echo blockdel
+	echo updatevirtio
 }
 
 function list {
@@ -295,6 +296,26 @@ function blockdel {
 	fi
 }
 
+function updatevirtio {
+	BRANCH=$1
+	if [[ "$BRANCH" != "latest" && "$BRANCH" != "stable" ]]; then
+		echo "Must pass argument: vmcore updatevirtio {latest,stable}"
+		return
+	fi
+	mkdir -p "$ROOTDIR/../volumes/iso"
+	cd "$ROOTDIR/../volumes/iso"
+	# https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/
+	# https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/
+	URL=$(curl -s -I -XGET "$(curl -s -I -XGET https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/$BRANCH-virtio/virtio-win.iso | grep Location: | sed 's#^Location: *##' | tr -c '[:print:]' '\0')" | grep Location: | sed 's#^Location: *##' | tr -c '[:print:]' '\0')
+	ISONAME="$(echo "$URL" | rev | cut -d/ -f-1 | rev)"
+	wget -nc -O"$ISONAME" "$URL"
+	if [ -f "virtio-win-$BRANCH.iso" ]; then
+		rm -f "virtio-win-$BRANCH.iso"
+	fi
+	ln -s "$ISONAME" "virtio-win-$BRANCH.iso"
+	readlink -f "virtio-win-$BRANCH.iso"
+}
+
 if [ -z "$VERB" -o "$VERB" == "-h" -o "$VM" == "-h" ]; then
 	VERB=help
 fi
@@ -380,6 +401,9 @@ case $VERB in
 	blockdel)
 		readvm
 		blockdel $VM $*
+		;;
+	updatevirtio)
+		updatevirtio $VM
 		;;
 	*)
 		readvm
