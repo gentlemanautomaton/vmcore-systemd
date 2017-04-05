@@ -1,7 +1,7 @@
 name=$VM
 nic=nic-$VM
 monitor=11$MONITORSUFFIX
-vnc=$VMID
+spice=59$MONITORSUFFIX
 bridge=kvmbr0
 ram=1024
 cpucorespersocket=4

@@ -13,14 +13,17 @@ ExecStart=/usr/bin/env kvm \
  -name ${name} \
  -nodefaults \
  -nographic \
- -device ${video} \
- -cpu host \
+ -cpu ${cpu} \
  -smp sockets=${cpusockets},cores=${cpucorespersocket},threads=${cputhreadspercore} \
  -k ${keyboardlayout} \
  -no-hpet \
  -rtc base=${clockbase},clock=${clockisolation},driftfix=${clockdriftfix} \
  -global kvm-pit.lost_tick_policy=discard \
- -vnc 127.0.0.1:${vnc} \
+ -vga qxl \
+ -spice port=${spice},addr=127.0.0.1,disable-ticketing \
+ -device virtio-serial-pci \
+ -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 \
+ -chardev spicevmc,id=spicechannel0,name=vdagent \
  -usbdevice tablet \
  -m ${ram} \
  -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
@@ -28,6 +31,7 @@ ExecStart=/usr/bin/env kvm \
  -device virtio-net-pci,netdev=nic0,mac=${mac},bus=pci.0 \
  -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay \
  $args
+# -device virtio-rng-pci
 # -device virtio-balloon-pci,id=balloon0
 ExecStartPost=/srv/vmcore/bin/poststart %i
 ExecStop=/srv/vmcore/bin/stop %i

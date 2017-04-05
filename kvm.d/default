@@ -1,10 +1,11 @@
 clockbase=utc
 clockisolation=host
 clockdriftfix=slew
+cpu=host
 cpusockets=1
 cpucorespersocket=1
 cputhreadspercore=1
 ram=512M
 bootsplash=/srv/vmcore/bootsplash.bmp
 keyboardlayout=en-us
-video=VGA
+video=qxl-vga
