@@ -162,7 +162,7 @@ function create {
 	echo "Creating $VM [VMID=$VMID] with MAC [$GENMAC]..."
 
 	TEMPCONF=$(mktemp)
-	sed -e "s/\$VMID/$VMID/" -e "s/\$VM/$VM/" -e "s/\$MONITORSUFFIX/$MONITORSUFFIX/" -e "s/\$GENMAC/$GENMAC/" "$SKELFILE" > "$TEMPCONF"
+	sed -e "s/\$VMID/$VMID/g" -e "s/\$VM/$VM/g" -e "s/\$MONITORSUFFIX/$MONITORSUFFIX/g" -e "s/\$GENMAC/$GENMAC/g" "$SKELFILE" > "$TEMPCONF"
 	editor "$TEMPCONF"
 
 	if [ -f "$VMCONF" ]; then
