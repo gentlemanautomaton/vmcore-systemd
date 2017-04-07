@@ -11,6 +11,7 @@ ExecStartPre=/srv/vmcore/bin/prestart %i
 ExecStart=/usr/bin/env kvm \
  -pidfile /srv/vmcore/run/%i.pid \
  -name ${name} \
+ -M q35 \
  -nodefaults \
  -nographic \
  -cpu ${cpu} \
@@ -28,7 +29,7 @@ ExecStart=/usr/bin/env kvm \
  -m ${ram} \
  -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
  -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
- -device virtio-net-pci,netdev=nic0,mac=${mac},bus=pci.0 \
+ -device virtio-net-pci,netdev=nic0,mac=${mac} \
  -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay \
  $args
 # -device virtio-rng-pci
