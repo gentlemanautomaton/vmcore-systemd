@@ -12,6 +12,7 @@ ExecStart=/usr/bin/env kvm \
  -pidfile /srv/vmcore/run/%i.pid \
  -name ${name} \
  -M q35 \
+ -m ${ram} \
  -nodefaults \
  -nographic \
  -cpu ${cpu} \
@@ -19,19 +20,50 @@ ExecStart=/usr/bin/env kvm \
  -k ${keyboardlayout} \
  -no-hpet \
  -rtc base=${clockbase},clock=${clockisolation},driftfix=${clockdriftfix} \
- -global kvm-pit.lost_tick_policy=discard \
- -vga qxl \
- -spice port=${spice},addr=127.0.0.1,disable-ticketing \
- -device virtio-serial-pci \
- -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 \
- -chardev spicevmc,id=spicechannel0,name=vdagent \
- -usbdevice tablet \
- -m ${ram} \
- -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
- -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
- -device virtio-net-pci,netdev=nic0,mac=${mac} \
  -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay \
+ -global kvm-pit.lost_tick_policy=discard \
+ -global qxl-vga.ram_size=67108864 \
+ -global qxl-vga.vram_size=67108864 \
+ -device ioh3420,id=pcie.1.0,chassis=10,bus=pcie.0,addr=1 \
+ -device ioh3420,id=pcie.2.0,chassis=20,bus=pcie.0,addr=2.0,multifunction=on \
+ -device ioh3420,id=pcie.2.1,chassis=21,bus=pcie.0,addr=2.1 \
+ -device ioh3420,id=pcie.2.2,chassis=22,bus=pcie.0,addr=2.2 \
+ -device ioh3420,id=pcie.2.3,chassis=23,bus=pcie.0,addr=2.3 \
+ -device ioh3420,id=pcie.2.4,chassis=24,bus=pcie.0,addr=2.4 \
+ -device ioh3420,id=pcie.2.5,chassis=25,bus=pcie.0,addr=2.5 \
+ -device ioh3420,id=pcie.2.6,chassis=26,bus=pcie.0,addr=2.6 \
+ -device ioh3420,id=pcie.2.7,chassis=27,bus=pcie.0,addr=2.7 \
+ -device ioh3420,id=pcie.3.0,chassis=30,bus=pcie.0,addr=3.0,multifunction=on \
+ -device ioh3420,id=pcie.3.1,chassis=31,bus=pcie.0,addr=3.1 \
+ -device ioh3420,id=pcie.3.2,chassis=32,bus=pcie.0,addr=3.2 \
+ -device ioh3420,id=pcie.3.3,chassis=33,bus=pcie.0,addr=3.3 \
+ -device ioh3420,id=pcie.3.4,chassis=34,bus=pcie.0,addr=3.4 \
+ -device ioh3420,id=pcie.3.5,chassis=35,bus=pcie.0,addr=3.5 \
+ -device ioh3420,id=pcie.3.6,chassis=36,bus=pcie.0,addr=3.6 \
+ -device ioh3420,id=pcie.3.7,chassis=37,bus=pcie.0,addr=3.7 \
+ -device ioh3420,id=pcie.10.0,chassis=100,bus=pcie.0,addr=10.0,multifunction=on \
+ -device ioh3420,id=pcie.10.1,chassis=101,bus=pcie.0,addr=10.1 \
+ -device ioh3420,id=pcie.10.2,chassis=102,bus=pcie.0,addr=10.2 \
+ -device ioh3420,id=pcie.10.3,chassis=103,bus=pcie.0,addr=10.3 \
+ -device qxl-vga,id=video0,bus=pcie.0,addr=11 \
+ -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
+ -device virtio-net-pci,netdev=nic0,mac=${mac},bus=pcie.10.0 \
+ -device nec-usb-xhci,id=usb,bus=pcie.10.1 \
+ -spice port=${spice},addr=127.0.0.1,disable-ticketing \
+ -device virtio-serial-pci,id=serial0,bus=pcie.10.2 \
+ -chardev socket,id=charchannel0,host=127.0.0.1,port=${agent},id=charchannel0,server,nowait,nodelay \
+ -device virtserialport,bus=serial0.0,nr=1,chardev=charchannel0,id=channel0,name=org.qemu.guest_agent.0 \
+ -chardev spicevmc,id=charchannel1,name=vdagent \
+ -device virtserialport,bus=serial0.0,nr=2,chardev=charchannel1,id=channel1,name=com.redhat.spice.0 \
+ -device usb-tablet,id=input0,bus=usb.0,port=1 \
+ -chardev spicevmc,id=charredir0,name=usbredir \
+ -device usb-redir,chardev=charredir0,id=redir0,bus=usb.0,port=2 \
+ -chardev spicevmc,id=charredir1,name=usbredir \
+ -device usb-redir,chardev=charredir1,id=redir1,bus=usb.0,port=3 \
+ -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
  $args
+# -global driver=cfi.pflash01,property=secure,value=on
+# -chardev socket,id=charchannel0,path=/tmp/vmcore/channel/%i/org.qemu.guest_agent.0,server,nowait
 # -device virtio-rng-pci
 # -device virtio-balloon-pci,id=balloon0
 ExecStartPost=/srv/vmcore/bin/poststart %i

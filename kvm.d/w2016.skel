@@ -1,0 +1,15 @@
+name=$VM
+nic=nic-$VM
+monitor=11$MONITORSUFFIX
+agent=12$MONITORSUFFIX
+spice=59$MONITORSUFFIX
+bridge=kvmbr0
+ram=2048
+cpu=host,hv_relaxed,hv_spinlocks=0x1fff,hv_vapic,hv_time
+cpucorespersocket=4
+cputhreadspercore=2
+mac=$GENMAC
+ip=10.100.1.$VMID
+backupimage=os;/media/archive1/$VM-os.%{TIME}.qcow2;3
+# maybe create the drive via this command: qemu-img create -f raw /tank/$VM/os/$VM-os.raw 64G
+args=-bios /srv/vmcore/ovmf/latest.bin -object iothread,id=iothread0 -device virtio-scsi-pci,id=scsi0,bus=pcie.1.0,num_queues=4,iothread=iothread0 -drive id=os,if=none,werror=stop,rerror=stop,aio=threads,cache=writeback,discard=on,detect-zeroes=on,format=raw,file=/tank/$VM/os/$VM-os.raw -device scsi-hd,drive=os,bus=scsi0.0,channel=0,scsi-id=0,lun=0,id=scsi0-0-0-0,bootindex=0 -drive id=win2016iso,media=cdrom,file=/srv/vmcore/volumes/iso/w2016.iso -drive id=vioiso,media=cdrom,file=/srv/vmcore/volumes/iso/virtio-win-latest.iso -boot order=cd,once=d
