@@ -62,6 +62,7 @@ ExecStart=/usr/bin/env kvm \
  -device usb-redir,chardev=charredir1,id=redir1,bus=usb.0,port=3 \
  -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
  $args
+# -global scsi-hd.physical_block_size 4096
 # -global driver=cfi.pflash01,property=secure,value=on
 # -chardev socket,id=charchannel0,path=/tmp/vmcore/channel/%i/org.qemu.guest_agent.0,server,nowait
 # -device virtio-rng-pci
