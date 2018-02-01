@@ -1,0 +1,39 @@
+[Unit]
+Description=vmcore KVM %I
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/srv/vmcore/kvm.d/default
+EnvironmentFile=/srv/vmcore/kvm.d/%i
+PIDFile=/srv/vmcore/run/%i.pid
+ExecStartPre=/srv/vmcore/bin/prestart %i
+ExecStart=/usr/bin/env kvm \
+ -pidfile /srv/vmcore/run/%i.pid \
+ -name ${name} \
+ -nodefaults \
+ -nographic \
+ -device VGA \
+ -cpu host \
+ -smp sockets=${cpusockets},cores=${cpucorespersocket},threads=${cputhreadspercore} \
+ -k ${keyboardlayout} \
+ -no-hpet \
+ -rtc base=${clockbase},clock=${clockisolation},driftfix=${clockdriftfix} \
+ -global kvm-pit.lost_tick_policy=discard \
+ -vnc 127.0.0.1:${vnc} \
+ -usbdevice tablet \
+ -m ${ram} \
+ -boot menu=on,reboot-timeout=5000,splash=${bootsplash} \
+ -netdev tap,id=nic0,ifname=${nic},script=/srv/vmcore/bin/kvm-ifup.sh,downscript=/srv/vmcore/bin/kvm-ifdown.sh \
+ -device virtio-net-pci,netdev=nic0,mac=${mac},bus=pci.0 \
+ -monitor telnet:127.0.0.1:${monitor},server,nowait,nodelay \
+ $args
+ExecStartPost=/srv/vmcore/bin/poststart %i
+ExecStop=/srv/vmcore/bin/stop %i
+TimeoutStopSec=60
+KillMode=control-group
+KillSignal=SIGKILL
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -7,7 +7,8 @@ apt-get install qemu-kvm bridge-utils ovmf crudini arp-scan nmap
 
 # install the unit template
 mkdir -p /usr/lib/systemd/system
-cp -v /srv/vmcore/systemd/vmcore-kvm@.service /usr/lib/systemd/system/
+cp -v /srv/vmcore/systemd/vmcore-kvm-v1@.service /usr/lib/systemd/system/
+cp -v /srv/vmcore/systemd/vmcore-kvm-v2@.service /usr/lib/systemd/system/
 systemctl daemon-reload
 
 # install the stable ovmf symlink

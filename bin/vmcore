@@ -9,6 +9,7 @@ shift
 
 DEFAULTCONF="$ROOTDIR/default"
 VMCONF="$ROOTDIR/$VM"
+vmservice="v2"
 
 export monitor backupimage
 
@@ -407,6 +408,6 @@ case $VERB in
 		;;
 	*)
 		readvm
-		systemctl $VERB vmcore-kvm@$VM.service $*
+		systemctl $VERB vmcore-kvm-$vmservice@$VM.service $*
 		;;
 esac
