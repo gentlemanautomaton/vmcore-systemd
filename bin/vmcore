@@ -131,6 +131,9 @@ function create {
 
 
 	if [ "$VMID" = "auto" ]; then
+		echo "Automatic VMID detection has been disabled in this build of vmcore. Its dependencies greatly increased the number of apt packages vmcore depended on."
+		exit 1
+
 		echo -n "Locating an available ID.  This might take a while... "
 		VMID=$(/srv/vmcore/bin/find-spare-id)
 		if [ -z "$VMID" ]; then
@@ -149,13 +152,13 @@ function create {
 		echo "VMID must be an integer."
 		exit 1
 	fi
-	echo -n "Testing the selected VMID [$VMID].  This might take a while... "
-	if [ -z "$(/srv/vmcore/bin/find-spare-id $VMID)" ]; then
-		echo "FAIL."
-		echo "The selected VMID [$VMID] is already in use."
-		exit 1
-	fi
-	echo "OKAY!"
+#	echo -n "Testing the selected VMID [$VMID].  This might take a while... "
+#	if [ -z "$(/srv/vmcore/bin/find-spare-id $VMID)" ]; then
+#		echo "FAIL."
+#		echo "The selected VMID [$VMID] is already in use."
+#		exit 1
+#	fi
+#	echo "OKAY!"
 
 	MONITORSUFFIX=$(printf "%03g" $VMID)
 	GENMAC=$(echo -n "52:54:00"; dd bs=1 count=3 if=/dev/random 2>/dev/null | hexdump -ve '/1 ":%02X"')
