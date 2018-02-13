@@ -3,7 +3,7 @@
 # Everything in this file should be done via package management, not this script.  FIXME
 
 # requires...
-apt-get install qemu-kvm bridge-utils ovmf crudini arp-scan nmap
+apt-get install qemu-kvm ovmf crudini
 
 # install the unit template
 mkdir -p /usr/lib/systemd/system
