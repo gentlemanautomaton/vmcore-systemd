@@ -2,7 +2,7 @@
 
 if [ -n "$nic" ]; then
 	# remove nic from the bridge
-	/usr/bin/env brctl delif $bridge $nic
+	/usr/bin/env ip link set dev $nic nomaster
 
 	# detach chain for this nic from firewall
         /usr/bin/env iptables -w -D INPUT -m physdev --physdev-is-bridged --physdev-in $nic -j $nic
@@ -15,5 +15,5 @@ if [ -n "$nic" ]; then
 	/usr/bin/env iptables -w -X $nic
 
 	# turn down the nic
-	/usr/bin/env ip link set $nic down
+	/usr/bin/env ip link set dev $nic down
 fi

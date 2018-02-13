@@ -5,7 +5,7 @@ if [ -n "$nic" ]; then
 	modprobe br_netfilter
 
 	# turn up the nic
-	/usr/bin/env ip link set $nic up
+	/usr/bin/env ip link set dev $nic up
 
 	# setup firewall chain for this nic
 	/usr/bin/env iptables -w -N $nic
@@ -34,5 +34,5 @@ if [ -n "$nic" ]; then
 	/usr/bin/env iptables -w -A FORWARD -m physdev --physdev-is-bridged --physdev-out $nic -j $nic
 
 	# add nic to the bridge
-	/usr/bin/env brctl addif $bridge $nic
+	/usr/bin/env ip link set dev $nic master $bridge
 fi
