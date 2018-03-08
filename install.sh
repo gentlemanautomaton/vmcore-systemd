@@ -9,6 +9,7 @@ apt-get install qemu-kvm ovmf crudini
 mkdir -p /usr/lib/systemd/system
 cp -v /srv/vmcore/systemd/vmcore-kvm-v1@.service /usr/lib/systemd/system/
 cp -v /srv/vmcore/systemd/vmcore-kvm-v2@.service /usr/lib/systemd/system/
+cp -v /srv/vmcore/systemd/zfs-import-delay.service /usr/lib/systemd/system/
 systemctl daemon-reload
 
 # install the stable ovmf symlink

@@ -1,0 +1,13 @@
+[Unit]
+Description=Waiting for disks to spin up before starting ZFS pools
+DefaultDependencies=no
+After=systemd-udev-settle.service
+Before=zfs-import-cache.service
+ConditionPathExists=/etc/zfs/zpool.cache
+
+[Service]
+Type=oneshot
+ExecStart=-/bin/sleep 15
+
+[Install]
+WantedBy=zfs-import-cache.service
