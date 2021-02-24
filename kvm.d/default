@@ -9,3 +9,4 @@ ram=512M
 bootsplash=/srv/vmcore/bootsplash.bmp
 keyboardlayout=en-us
 video=qxl-vga
+uuid=00000000-0000-0000-0000-000000000000
